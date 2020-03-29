@@ -24,6 +24,8 @@ public class SimEnvironment {
 	//----------------------------------------------------------------
 	// Population Variables
 	private int citizenStepSize;
+	private double mortalityRate;
+	private int populationsSize;
 	//----------------------------------------------------------------
 	// GUI Variables
 	EnvironmentPane guiEnvironment ;	
@@ -40,7 +42,8 @@ public class SimEnvironment {
 		this.timeIncrement=timeIncrement; 		
 	}
 	
-	public void createPopulation(int populationSize, int infectionRadius, int riskOfInfection, double initInfectionRate, double sickLeave) {
+	public void createPopulation(int populationSize, int infectionRadius, int riskOfInfection, 
+								double initInfectionRate, double mortalityRate, double sickLeave) {
 		int nrOfSick = (int) (initInfectionRate*populationSize);
 		for(int i=0;i<populationSize;i++) {
 			int healthstatus = 0;
@@ -50,7 +53,10 @@ public class SimEnvironment {
 			int[] initPos = new int[2];
 			initPos[0] = rand.nextInt(fieldSize[0]);
 			initPos[1] = rand.nextInt(fieldSize[1]);
-
+			
+			this.mortalityRate=mortalityRate;
+			this.populationsSize=populationSize;
+			
 			RandomDude citizen = new RandomDude(initPos, fieldSize, citizenStepSize, healthstatus, infectionRadius, riskOfInfection, sickLeave);
 			populationField.add(citizen);
 		}
@@ -89,7 +95,13 @@ public class SimEnvironment {
 			if(citizen.getHealthStatus() == 1 ) { 			// Case: Sick Person 
 				citizen.updateSickLeave(timeIncrement);     
 				if(citizen.getInfectionTime()>citizen.getSickLeave()) {
-					citizen.setHealthStatus(2);  // set to removed 
+					int inMortRate = (int) (mortalityRate * 1000);
+					int nerosCall = rand.nextInt(1001);
+					if(nerosCall > inMortRate) {
+						citizen.setHealthStatus(2);  // set to removed and alive
+					} else {
+						citizen.setHealthStatus(3);  // set to removed and dead
+					}
 				}
 			}
 		}
@@ -142,6 +154,7 @@ public class SimEnvironment {
 		int nrInfected=0;
 		int nrFine=0;
 		int nrRemoved=0;
+		int nrDead=0;
 		DecimalFormat numberFormat =  new DecimalFormat("##.##");
 		for(int i=0;i<populationField.size();i++) {
 			RandomDude citizen = (RandomDude) populationField.get(i);
@@ -151,11 +164,14 @@ public class SimEnvironment {
 				nrInfected++;
 			} else if (citizen.getHealthStatus()==2) {
 				nrRemoved++;
+			} else if (citizen.getHealthStatus()==3) {
+				nrDead++;
 			}
 		}
-		double infRate = (double) (nrInfected) / populationField.size() * 100;
-		double immRate = (double) (nrRemoved) / populationField.size()  * 100;
-		double receptRate = (double) (nrFine) / populationField.size()  * 100;
+		double infRate    = (double) (nrInfected) / populationField.size()  * 100;
+		double immRate    = (double) (nrRemoved)  / populationField.size()  * 100;
+		double receptRate = (double) (nrFine)     / populationField.size()  * 100;
+		double deathRate  = (double) (nrDead)     / populationField.size()  * 100;
 		System.out.println("Infection Rate: "+numberFormat.format(infRate) );
 		// System.out.println("Immunity Rate: "+immRate);
 		// Remember to change array size in Main!!! 
@@ -163,7 +179,7 @@ public class SimEnvironment {
 		dataOut[0] = infRate;
 		dataOut[1] = receptRate;
 		dataOut[2] = immRate;
-		dataOut[3] = 0;
+		dataOut[3] = deathRate;
 		realTimePlotElement.updateChart(dataOut);
 	}
 	
@@ -197,6 +213,10 @@ public class SimEnvironment {
 
 	public void setRealTimePlotElement(RealTimePlotElement realTimePlotElement) {
 		this.realTimePlotElement = realTimePlotElement;
+	}
+
+	public int getPopulationsSize() {
+		return populationsSize;
 	}
 	
 }

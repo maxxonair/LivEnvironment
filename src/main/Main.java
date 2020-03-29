@@ -15,20 +15,22 @@ public class Main {
 		
 		// Playground 
 	    int[] fieldSize= new int[2];
-	    fieldSize[0] = 800;
+	    fieldSize[0] = 900;
 	    fieldSize[1] = 500;
 	    
+	    int citizenSize = 5;
 	    // Population Settings 
-	    int populationSize = 180;
-	    int citizenStepSize = 10; 	
+	    int populationSize = 700;
+	    int citizenStepSize = 15; 	
 	    
 	    // Pandemic Settings 
-	    int infectionRadius = 30;	    
-	    int riskOfInfection = 50;
-	    double sickLeave = 3;  //[s]
+	    int infectionRadius = 15;	    
+	    int riskOfInfection = 60;
+	    double sickLeave = 2;  //[s]
+	    double mortalityRate = 0.09;
 	    
 	    // Init health setting 
-	    double initInfectionRate= 0.05;  // Initial amount of infected citizens
+	    double initInfectionRate= 0.025;  // Initial amount of infected citizens
 	    
 	    // Console settings
 	    boolean consPos=false;
@@ -41,9 +43,11 @@ public class Main {
 	    }
 	    //-----------------------------------------------------------------------------
 	    // Create Simulation Environment 
-		SimEnvironment simEnvironment = new SimEnvironment(fieldSize, citizenStepSize, timeIncrement);
+		SimEnvironment simEnvironment = new SimEnvironment(fieldSize, citizenStepSize, 
+														timeIncrement);
 		// Create population 
-		simEnvironment.createPopulation(populationSize, infectionRadius, riskOfInfection, initInfectionRate, sickLeave);
+		simEnvironment.createPopulation(populationSize, infectionRadius, riskOfInfection, 
+										initInfectionRate, mortalityRate, sickLeave);
 		// Simulation Output Settings
 		simEnvironment.setBoPosOut(consPos);
 		simEnvironment.setBoHealthOut(healthOut);
@@ -58,7 +62,8 @@ public class Main {
 		//-----------------------------------------------------------------------------
 		// Create GUI
 	    @SuppressWarnings("unused")
-		MainFrame guiFrame = new MainFrame(fieldSize, simEnvironment, simulationMain, simulationTime, timeIncrement, dataOut);
+		MainFrame guiFrame = new MainFrame(fieldSize, simEnvironment, simulationMain, 
+				simulationTime, timeIncrement, dataOut, citizenSize);
 		//-----------------------------------------------------------------------------
 		// Launch Simulation:
 		//simulationMain.start();		

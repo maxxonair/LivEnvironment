@@ -16,9 +16,10 @@ public class RandomDude extends Citizen implements Cloneable {
 	private int[] position= new int[2];  // Current position on the field 
 	private int stepSize; 				 // Maximum step on the field per timestep 
 	// Health Status
-	// 0 - Healthy 
+	// 0 - Healthy/Receptive
 	// 1 - Sick 
-	// 2 - Removed 
+	// 2 - Removed/Alive 
+	// 3 - Removed/Dead
 	private int healthStatus=0;
 	
 	private double infectionTime=0;  // Time since infection 
@@ -58,14 +59,16 @@ public class RandomDude extends Citizen implements Cloneable {
 		// Take a random step 
 		int walkDecis = rand.nextInt(4);
 		int[] newPosition = position;
-		if(walkDecis==0) { 		   // north
-			newPosition[1] -= stepReal;
-		} else if (walkDecis==1) { // west 
-			newPosition[0] += stepReal;
-		} else if (walkDecis==2) { // south 
-			newPosition[1] += stepReal;
-		} else if (walkDecis==3) { // east 
-			newPosition[0] -= stepReal;
+		if(healthStatus != 3) {
+			if(walkDecis==0) { 		   // north
+				newPosition[1] -= stepReal;
+			} else if (walkDecis==1) { // west 
+				newPosition[0] += stepReal;
+			} else if (walkDecis==2) { // south 
+				newPosition[1] += stepReal;
+			} else if (walkDecis==3) { // east 
+				newPosition[0] -= stepReal;
+			}
 		}
 		//------------------------------------------------------------
 		// Check if the new position is occupied 
@@ -86,6 +89,7 @@ public class RandomDude extends Citizen implements Cloneable {
 		} else if (newPosition[1]<0) {
 			newPosition[1] = 0;
 		}
+		//------------------------------------------------------------
 		//------------------------------------------------------------
 		// Set new citizen position
 		this.position = newPosition;
@@ -140,6 +144,8 @@ public class RandomDude extends Citizen implements Cloneable {
 			this.color = Color.RED;
 		} else if (healthStatus==2) {
 			this.color = new Color(210,210,210);
+		} else if (healthStatus==3) {
+			this.color = Color.BLACK;
 		}
 	}
 	

@@ -10,6 +10,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
 import population.Citizen;
+import population.RandomDude;
 import simPlatform.SimEnvironment;
 
 public class EnvironmentPane {
@@ -19,16 +20,23 @@ public class EnvironmentPane {
 	public static Font smallFont			  = new Font("Verdana", Font.LAYOUT_LEFT_TO_RIGHT, 10);
     public static JTextArea textArea 	  = new JTextArea();
 
-    List<Citizen> population;
+
+   	//public static Color backgroundColor = new Color(251,251,251);				    // Background Color
+   	public static Color backgroundColor = new Color(41,41,41);				    // Background Color
+   	
+    private List<Citizen> population;
     
-    List<JPanel> populationElements;
+    private List<JPanel> populationElements;
+    
+    private int citizenSize;
 	
-	public EnvironmentPane(int[] fieldSize, SimEnvironment simEnvironment) {
+	public EnvironmentPane(int[] fieldSize, SimEnvironment simEnvironment, int citizenSize) {
 		mainPanel = new JPanel();
 		mainPanel.setLayout(null);
-		mainPanel.setBackground(Color.GRAY);
+		mainPanel.setBackground(backgroundColor);
 		mainPanel.setSize(new Dimension(fieldSize[0],fieldSize[1]));
 		
+		this.citizenSize=citizenSize;
 		// Link GUI to Population 
 		this.population = simEnvironment.getPopulationField();
 		// Link GUI to Simulation environment 
@@ -41,8 +49,17 @@ public class EnvironmentPane {
 		populationElements = new ArrayList<>();
 		for(int i=0;i<population.size();i++) {
 			JPanel citizen = new JPanel();
-			citizen.setSize(3,3);
-			citizen.setBackground(Color.RED);
+			citizen.setSize(citizenSize,citizenSize);
+			RandomDude dude = (RandomDude) (population.get(i));
+			if(dude.getHealthStatus()==0) {
+			citizen.setBackground(Color.BLUE);
+			} else if (dude.getHealthStatus()==1) {
+				citizen.setBackground(Color.RED);
+			} else if (dude.getHealthStatus()==2) {
+				citizen.setBackground(Color.GRAY);
+			} else if (dude.getHealthStatus()==3) {
+				citizen.setBackground(Color.BLACK);
+			}
 			//citizen.setLayout(null);
 			citizen.setLocation(population.get(i).getPosition()[0], 
 					 			population.get(i).getPosition()[1]);

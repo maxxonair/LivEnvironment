@@ -76,7 +76,7 @@ public class RealTimePlotElement {
 	   	seriesColor[0] = Color.RED;
 	   	seriesColor[1] = Color.BLUE;
 	   	seriesColor[2] = Color.WHITE;
-	   	seriesColor[3] = Color.GREEN;
+	   	seriesColor[3] = Color.BLACK;
 	   	
 	   	createPlotElement();
 
