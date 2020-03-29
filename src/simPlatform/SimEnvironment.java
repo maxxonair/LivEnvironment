@@ -26,8 +26,10 @@ public class SimEnvironment {
 	//----------------------------------------------------------------
 	// Population Variables
 	private int citizenStepSize;
-	private double mortalityRate;
 	private int populationsSize;
+	
+	private PandemicSettings pandemicSetting;
+	// -> sick infectious citizens are not quarantined
 	//----------------------------------------------------------------
 	// GUI Variables
 	EnvironmentPane guiEnvironment ;	
@@ -38,39 +40,49 @@ public class SimEnvironment {
 	boolean boHealthOut=false;
 	boolean boCreateOutFile=false;
 	
-
 	//----------------------------------------------------------------
 	// Output variables 
 	private double[] dataOut;
-	
+	//----------------------------------------------------------------
+	// Statistics data 
+	double infRate    = 0;
+	double immRate    = 0;
+	double receptRate = 0;
+	double deathRate  = 0;
+	//----------------------------------------------------------------
+    final int HEALTHY =0;
+	final int SICK    =1;
+	final int REMOVED =2;
+	final int SICKNONCONTAGIOUS =4;
+	//----------------------------------------------------------------
 	private String strFileName;
 	private String strOutputFileFormat=".pandaOut";
 	
-	public SimEnvironment(int[] fieldSize, int citizenStepSize, int timeIncrement, double[] dataOut, String strFileName) {
+	public SimEnvironment(int[] fieldSize, int citizenStepSize, int timeIncrement, 
+			double[] dataOut, String strFileName, PandemicSettings pandemicSetting) {
 		this.fieldSize=fieldSize;
 		this.citizenStepSize=citizenStepSize;
 		this.timeIncrement=timeIncrement; 
 		this.dataOut=dataOut;
 		this.strFileName=strFileName;
-		
+		this.pandemicSetting=pandemicSetting;
 	}
 	
-	public void createPopulation(int populationSize, int infectionRadius, int riskOfInfection, 
-								double initInfectionRate, double mortalityRate, double sickLeave) {
-		int nrOfSick = (int) (initInfectionRate*populationSize);
+	public void createPopulation(int populationSize) {
+		int nrOfSick = (int) (pandemicSetting.getInitInfectionRate()*populationSize);
 		for(int i=0;i<populationSize;i++) {
 			int healthstatus = 0;
 			if(i< (nrOfSick)) {
-				healthstatus = 1;
+				healthstatus = 4;
 			}
 			int[] initPos = new int[2];
 			initPos[0] = rand.nextInt(fieldSize[0]);
 			initPos[1] = rand.nextInt(fieldSize[1]);
 			
-			this.mortalityRate=mortalityRate;
 			this.populationsSize=populationSize;
 			
-			RandomDude citizen = new RandomDude(initPos, fieldSize, citizenStepSize, healthstatus, infectionRadius, riskOfInfection, sickLeave);
+			RandomDude citizen = new RandomDude(initPos, fieldSize, citizenStepSize, healthstatus, 
+				                                pandemicSetting);
 			populationField.add(citizen);
 		}
 	}
@@ -88,42 +100,63 @@ public class SimEnvironment {
 			// Detect Citizens in vicinity radius 
 			// Loop through vicinity field
 			int[] x0 = citizen.getPosition();
-			int r = citizen.getInfectionRadius();
+			int r = citizen.getPandemicSetting().getInfectionRadius();
 			//-------------------------------------------------------------------------------------------
-			if(citizen.getHealthStatus() == 0 ) {			// Case: Healthy Person 
+			if(citizen.getHealthStatus() == 0) {
 				for(int i=(x0[0]-r); i<=(x0[0]+r);i++) {
 					for(int j=(x0[1]-r); j<=(x0[1]+r);j++) {
 						for (int l=0; l<populationField.size();l++) {
 							int[] cis=new int[2];cis[0]=i; cis[1]=j;
 							RandomDude intCit = (RandomDude) populationField.get(l);
 							if(k != l && intCit.getPosition()[0] == cis[0] 
-									&& intCit.getPosition()[1] == cis[1]  && intCit.getHealthStatus() == 1) {
-								citizen.setHealthStatus( contaminationCaseAssessment(citizen.getRiskOfInfection()) ); 
+									&& intCit.getPosition()[1] == cis[1]  && (intCit.getHealthStatus() == 1 || intCit.getHealthStatus() == 4 )) {  // Sickness assessment 
+								citizen.setHealthStatus( contaminationCaseAssessment(citizen.getPandemicSetting().getRiskOfInfection()) ); 
 							}
 						}
 					}
 				}
-			}
+
 			//-------------------------------------------------------------------------------------------
-			if(citizen.getHealthStatus() == 1 ) { 			// Case: Sick Person 
-				citizen.updateSickLeave(timeIncrement);     
-				if(citizen.getInfectionTime()>citizen.getSickLeave()) {
-					int inMortRate = (int) (mortalityRate * 1000);
+			} else if (citizen.getHealthStatus() == 1) {
+				citizen.updateSickLeave(timeIncrement);  
+				if(citizen.getInfectionTime()>citizen.getPandemicSetting().getSickLeave()) {
+
+					int inMortRate = (int) (citizen.getPandemicSetting().getMortalityRate() * 1000);
 					int nerosCall = rand.nextInt(1001);
 					if(nerosCall > inMortRate) {
-						citizen.setHealthStatus(2);  // set to removed and alive
+						citizen.setHealthStatus(2);  // set to removed and alive and immune
+						citizen.setContainmentStatus(0);
 					} else {
 						citizen.setHealthStatus(3);  // set to removed and dead
+						citizen.setContainmentStatus(0);  
 					}
 				}
+				
+			//-------------------------------------------------------------------------------------------
+			} else if (citizen.getHealthStatus() == 4) {
+				citizen.updateSickLeave(timeIncrement); 
+				if(citizen.getInfectionTime()>citizen.getPandemicSetting().getTimeToSymptoms() ) {
+					citizen.setHealthStatus(1);  // set to sick and contagious
+					
+					if(citizen.getPandemicSetting().isBoEnterQuarantine()) {
+						int quarantRate = (int) (citizen.getPandemicSetting().getSymptomRate() * 1000);
+						int quarantineCall = rand.nextInt(1001);
+						if(quarantineCall > quarantRate) {
+							citizen.setContainmentStatus(1);  // Citizen is entering quarantine and is removed from the field
+						}
+					}
+					
+				}
+				
 			}
+			
 		}
 	}
 	
 	private int contaminationCaseAssessment(int riskOfInfection) {
 		int riskCase = rand.nextInt(100);
 		if(riskCase < riskOfInfection ) {
-			return 1;
+			return 4;
 		} else {
 			return 0;
 		}
@@ -184,10 +217,10 @@ public class SimEnvironment {
 				nrDead++;
 			}
 		}
-		double infRate    = (double) (nrInfected) / populationField.size()  * 100;
-		double immRate    = (double) (nrRemoved)  / populationField.size()  * 100;
-		double receptRate = (double) (nrFine)     / populationField.size()  * 100;
-		double deathRate  = (double) (nrDead)     / populationField.size()  * 100;
+		 infRate    = (double) (nrInfected) / populationField.size()  * 100;
+		 immRate    = (double) (nrRemoved)  / populationField.size()  * 100;
+		 receptRate = (double) (nrFine)     / populationField.size()  * 100;
+		 deathRate  = (double) (nrDead)     / populationField.size()  * 100;
 		System.out.println("Infection Rate: "+numberFormat.format(infRate) );
 		// System.out.println("Immunity Rate: "+immRate);
 
@@ -198,10 +231,14 @@ public class SimEnvironment {
 		realTimePlotElement.updateChart(dataOut);
 	}
 	
-	private static ArrayList<String> addOutputTimestepData(ArrayList<String> steps, int timeIs, int timesteps, List<Citizen> populationField) {
+	private ArrayList<String> addOutputTimestepData(ArrayList<String> steps, int timeIs, int timesteps, List<Citizen> populationField) {
 	double time = (double) (timeIs) / ( 1000 / (double) (timesteps)  ); 
 	String strLine ="";
 	strLine += time +" ";
+	strLine += infRate +" ";
+	strLine += immRate +" ";
+	strLine += receptRate +" ";
+	strLine += deathRate +" ";
 	steps.add(strLine);
 	return steps;	
 	}
@@ -267,4 +304,6 @@ public class SimEnvironment {
 	public void setBoCreateOutFile(boolean boCreateOutFile) {
 		this.boCreateOutFile = boCreateOutFile;
 	}
+	
+	
 }

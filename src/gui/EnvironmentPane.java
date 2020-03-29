@@ -62,6 +62,8 @@ public class EnvironmentPane {
 				citizen.setBackground(Color.GRAY);
 			} else if (dude.getHealthStatus()==3) {
 				citizen.setBackground(Color.BLACK);
+			} else if (dude.getHealthStatus()==4) {
+				citizen.setBackground(Color.ORANGE);
 			}
 			//citizen.setLayout(null);
 			citizen.setLocation(population.get(i).getPosition()[0], 
