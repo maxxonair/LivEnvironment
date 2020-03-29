@@ -20,7 +20,7 @@ public class Sideboard {
 		mainPanel = new JPanel();
 		mainPanel.setLayout(new BorderLayout());
 		mainPanel.setBackground(backgroundColor);
-		mainPanel.setPreferredSize(new Dimension(420,450));
+		mainPanel.setPreferredSize(new Dimension(160,450));
 
 	    ControlPane controlPane = new ControlPane(simulationMain);
 	    mainPanel.add(controlPane.getMainPanel(), BorderLayout.CENTER);

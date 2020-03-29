@@ -125,8 +125,8 @@ public class RealTimePlotElement {
 				plot.setBackgroundPaint(backgroundColor);
 				plot.setDomainGridlinePaint(labelColor);
 				plot.setRangeGridlinePaint(labelColor); 
-				plot.getRangeAxis().setLabel("[-]");
-				plot.getDomainAxis().setLabel("time [-]");
+				plot.getRangeAxis().setLabel("[percentage]");
+				plot.getDomainAxis().setLabel("time [days]");
 			    renderer.setSeriesPaint( i , seriesColor[i]);
 				renderer.setSeriesShape(i, dot);
 		    }

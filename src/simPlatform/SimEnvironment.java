@@ -1,5 +1,7 @@
 package simPlatform;
 
+import java.io.File;
+import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,12 +36,23 @@ public class SimEnvironment {
 	// Script Control Variables 
 	boolean boPosOut=false;
 	boolean boHealthOut=false;
+	boolean boCreateOutFile=false;
 	
+
 	//----------------------------------------------------------------
-	public SimEnvironment(int[] fieldSize, int citizenStepSize, int timeIncrement) {
+	// Output variables 
+	private double[] dataOut;
+	
+	private String strFileName;
+	private String strOutputFileFormat=".pandaOut";
+	
+	public SimEnvironment(int[] fieldSize, int citizenStepSize, int timeIncrement, double[] dataOut, String strFileName) {
 		this.fieldSize=fieldSize;
 		this.citizenStepSize=citizenStepSize;
-		this.timeIncrement=timeIncrement; 		
+		this.timeIncrement=timeIncrement; 
+		this.dataOut=dataOut;
+		this.strFileName=strFileName;
+		
 	}
 	
 	public void createPopulation(int populationSize, int infectionRadius, int riskOfInfection, 
@@ -117,6 +130,7 @@ public class SimEnvironment {
 	}
 	
 	public void runSimulation(int timeSteps, int timestep) {
+		ArrayList<String> steps = new ArrayList<String>();
 		int tstep=0;
 		while(tstep<timeSteps) {
 			//-------------------------
@@ -126,8 +140,9 @@ public class SimEnvironment {
 			// Update GUI
 			updateGUI();
 			// Output
-			if(boPosOut)    {outPositions(tstep);}
-			if(boHealthOut) {outHealthStats();}
+			if(boPosOut)    		{outPositions(tstep);}
+			if(boHealthOut) 		{outHealthStats();}
+			if(boCreateOutFile) {addOutputTimestepData(steps, tstep ,timestep, populationField);}
 			//-------------------------
 			try {
 				TimeUnit.MILLISECONDS.sleep(timestep);
@@ -136,7 +151,8 @@ public class SimEnvironment {
 				e.printStackTrace();
 			}
 			tstep++;
-		}		
+		}	
+		if(boCreateOutFile) {createWriteOut(steps);}
 	}
 	
 	public void outPositions(int currentTimestep) {
@@ -174,8 +190,7 @@ public class SimEnvironment {
 		double deathRate  = (double) (nrDead)     / populationField.size()  * 100;
 		System.out.println("Infection Rate: "+numberFormat.format(infRate) );
 		// System.out.println("Immunity Rate: "+immRate);
-		// Remember to change array size in Main!!! 
-		double[] dataOut = new double[4];
+
 		dataOut[0] = infRate;
 		dataOut[1] = receptRate;
 		dataOut[2] = immRate;
@@ -183,6 +198,28 @@ public class SimEnvironment {
 		realTimePlotElement.updateChart(dataOut);
 	}
 	
+	private static ArrayList<String> addOutputTimestepData(ArrayList<String> steps, int timeIs, int timesteps, List<Citizen> populationField) {
+	double time = (double) (timeIs) / ( 1000 / (double) (timesteps)  ); 
+	String strLine ="";
+	strLine += time +" ";
+	steps.add(strLine);
+	return steps;	
+	}
+
+	private void createWriteOut(ArrayList<String> steps) {
+        try{
+            String resultpath="";
+            	String dir = System.getProperty("user.dir");
+            	resultpath = dir + "/" + strFileName+ ""+ strOutputFileFormat;
+            PrintWriter writer = new PrintWriter(new File(resultpath), "UTF-8");
+            for(String step: steps) {
+                writer.println(step);
+            }
+            System.out.println("WRITE: Result file >> Complete"); 
+            System.out.println("------------------------------------------");
+            writer.close();
+        } catch(Exception e) {System.out.println("ERROR: Writing result file failed");System.out.println(e);};
+}
 	
 	
 	public void updateGUI() {
@@ -218,5 +255,16 @@ public class SimEnvironment {
 	public int getPopulationsSize() {
 		return populationsSize;
 	}
+
+	public void setStrFileName(String strFileName) {
+		this.strFileName = strFileName;
+	}
+
+	public void setStrOutputFileFormat(String strOutputFileFormat) {
+		this.strOutputFileFormat = strOutputFileFormat;
+	}
 	
+	public void setBoCreateOutFile(boolean boCreateOutFile) {
+		this.boCreateOutFile = boCreateOutFile;
+	}
 }

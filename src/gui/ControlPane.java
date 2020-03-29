@@ -31,7 +31,7 @@ public class ControlPane {
 		
 		JButton startButton = new JButton("Start/Stop");
 		startButton.setSize(150,50);
-		startButton.setLocation(30, 30);
+		startButton.setLocation(5, 30);
 		startButton.addActionListener(new ActionListener() {
 
 			@Override

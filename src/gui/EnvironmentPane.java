@@ -23,10 +23,12 @@ public class EnvironmentPane {
 
    	//public static Color backgroundColor = new Color(251,251,251);				    // Background Color
    	public static Color backgroundColor = new Color(41,41,41);				    // Background Color
-   	
+   	// List of citizens
     private List<Citizen> population;
-    
+    // List of GUI citizens
     private List<JPanel> populationElements;
+    // Link to simulation backbone
+    SimEnvironment simEnvironment;
     
     private int citizenSize;
 	
@@ -36,6 +38,7 @@ public class EnvironmentPane {
 		mainPanel.setBackground(backgroundColor);
 		mainPanel.setSize(new Dimension(fieldSize[0],fieldSize[1]));
 		
+		this.simEnvironment=simEnvironment;
 		this.citizenSize=citizenSize;
 		// Link GUI to Population 
 		this.population = simEnvironment.getPopulationField();
@@ -47,6 +50,32 @@ public class EnvironmentPane {
 	
 	public void initPopulation() {
 		populationElements = new ArrayList<>();
+		for(int i=0;i<population.size();i++) {
+			JPanel citizen = new JPanel();
+			citizen.setSize(citizenSize,citizenSize);
+			RandomDude dude = (RandomDude) (population.get(i));
+			if(dude.getHealthStatus()==0) {
+			citizen.setBackground(Color.BLUE);
+			} else if (dude.getHealthStatus()==1) {
+				citizen.setBackground(Color.RED);
+			} else if (dude.getHealthStatus()==2) {
+				citizen.setBackground(Color.GRAY);
+			} else if (dude.getHealthStatus()==3) {
+				citizen.setBackground(Color.BLACK);
+			}
+			//citizen.setLayout(null);
+			citizen.setLocation(population.get(i).getPosition()[0], 
+					 			population.get(i).getPosition()[1]);
+			populationElements.add(citizen);
+			mainPanel.add(citizen);
+		}
+		mainPanel.revalidate();
+		mainPanel.repaint();
+	}
+	
+	public void resetPopulation() {
+		populationElements.clear();
+		this.population = simEnvironment.getPopulationField();
 		for(int i=0;i<population.size();i++) {
 			JPanel citizen = new JPanel();
 			citizen.setSize(citizenSize,citizenSize);
