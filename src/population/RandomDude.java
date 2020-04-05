@@ -20,22 +20,29 @@ public class RandomDude extends Citizen implements Cloneable {
 	//-------------------------------------------------------------------------------------
 	// Health Status
 	// 0 - Healthy/Receptive
-	// 1 - Sick/Contagious
+	// 1 - Sick and Contagious
 	// 2 - Removed/Alive 
 	// 3 - Removed/Dead
-	// 4 - Sick/ Non Contagious
+	// 4 - Contagious/Not sick
 	private int healthStatus=0;
 	//-------------------------------------------------------------------------------------
 	// Containment Status
 	// 0 - Out and about
-	// 1 - Quarantined 
+	// 1 - Quarantined/Hospitalized
 	private int containmentStatus=0;
+	//-------------------------------------------------------------------------------------
+	// Mobility type:
+	// 0 - random walker 
+	// 1 - north south walker 
+	// 2 - east - west walker 
+	private int mobilityType;
+	private boolean isMobilityDir1=false;  // mobility type 1 walks north or west
 	//-------------------------------------------------------------------------------------
 	private double infectionTime=0;  	// Time since infection 
 	PandemicSettings pandemicSetting;
 	//-------------------------------------------------------------------------------------
 	public RandomDude(int[] position, int[] fieldSize, int stepSize, int healthStatus, 
-			            PandemicSettings pandemicSetting) {
+			            int mobilityType, PandemicSettings pandemicSetting) {
 		super(position, fieldSize);
 		
 		this.position=position;
@@ -44,6 +51,9 @@ public class RandomDude extends Citizen implements Cloneable {
 		this.pandemicSetting=pandemicSetting;
 		
 		this.healthStatus=healthStatus;
+		this.mobilityType=mobilityType;
+		
+		isMobilityDir1 = rand.nextBoolean();
 		
 		if(healthStatus==0) {
 			this.color = Color.BLUE;
@@ -56,8 +66,10 @@ public class RandomDude extends Citizen implements Cloneable {
 		}
 	}
 
-	public void move(int[] position, List<Citizen> populationField) {
+	public void move(List<Citizen> populationField) {
+		int[] newPosition = position;
 		if(containmentStatus == 0) { // Dude is out and about 
+			if(mobilityType == 0) {
 			// Perform step randomly eather to north, east, south or west 
 			// If the new position is occupied by another citizen -> stay 
 			// If the new position is outside the environment     -> stay 
@@ -66,7 +78,6 @@ public class RandomDude extends Citizen implements Cloneable {
 			int stepReal = rand.nextInt(stepSize+1);
 			// Take a random step 
 			int walkDecis = rand.nextInt(4);
-			int[] newPosition = position;
 			if(healthStatus != 3) {
 				if(walkDecis==0) { 		   // north
 					newPosition[1] -= stepReal;
@@ -98,9 +109,51 @@ public class RandomDude extends Citizen implements Cloneable {
 				newPosition[1] = 0;
 			}
 			//------------------------------------------------------------
+		} else if (mobilityType == 1) {
+			if(healthStatus != 3) {
+				int step = rand.nextInt(8);
+				if(isMobilityDir1) {
+					newPosition[1]+= step; // step south 
+				} else {
+					newPosition[1]-= step; // step north
+				}
+			}
+			
 			//------------------------------------------------------------
-			// Set new citizen position
-			this.position = newPosition;
+			// Check if the new position is outside the environment frame 
+			if(newPosition[1]>fieldSize[1] ) {
+				newPosition[1] = fieldSize[1]-1;
+				isMobilityDir1= !isMobilityDir1;
+			} else if (newPosition[1]<0) {
+				newPosition[1] = 0;
+				isMobilityDir1= !isMobilityDir1;
+			}
+			
+		} else if (mobilityType == 2) {
+			if(healthStatus != 3) {
+				int step = rand.nextInt(8);
+				if(isMobilityDir1) {
+					newPosition[0]+= step; // step south 
+				} else {
+					newPosition[0]-= step; // step north
+				}
+			}
+			
+			//------------------------------------------------------------
+			// Check if the new position is outside the environment frame 
+			if(newPosition[0]>fieldSize[0] ) {
+				newPosition[0] = fieldSize[0]-1;
+				isMobilityDir1= !isMobilityDir1;
+			} else if (newPosition[0]<0) {
+				newPosition[0] = 0;
+				isMobilityDir1= !isMobilityDir1;
+			}
+			
+		}
+		
+		//------------------------------------------------------------
+		// Set new citizen position
+		this.position = newPosition;
 		}
 	}
 	

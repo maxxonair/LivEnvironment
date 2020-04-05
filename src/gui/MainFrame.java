@@ -18,13 +18,13 @@ public class MainFrame {
 		frame.setSize(400,400);
 		frame.setLayout(new BorderLayout());
 		
-		MenuBar menuBar = new MenuBar();
+		MenuBar menuBar = new MenuBar(frame, simulationMain);
 		frame.add(menuBar.getMenuBar(), BorderLayout.NORTH);
 		
 		SimulationCanvas simulationCanvas = new SimulationCanvas(fieldSize, simEnvironment, citizenSize);
 		//frame.add(simulationCanvas.getMainPanel(), BorderLayout.CENTER);
 		
-		Sideboard sideboard = new Sideboard( simulationMain);
+		//Sideboard sideboard = new Sideboard( simulationMain);
 		//frame.add(sideboard.getMainPanel(), BorderLayout.WEST);
 		
 		double plotFrequency = 1000/(double) (timeIncrement);
@@ -34,7 +34,7 @@ public class MainFrame {
 		
 		JPanel topPanel = new JPanel();
 		topPanel.setLayout(new BorderLayout());
-		topPanel.add(sideboard.getMainPanel(), BorderLayout.WEST);
+		//topPanel.add(sideboard.getMainPanel(), BorderLayout.WEST);
 		topPanel.add(simulationCanvas.getMainPanel(), BorderLayout.CENTER);
 		
 		//JSplitPane horizontalSplitUp = SplitPane.getSplitPane("horizontal");

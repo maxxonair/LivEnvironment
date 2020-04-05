@@ -6,7 +6,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 import gui.EnvironmentPane;
 import population.Citizen;
@@ -46,14 +45,13 @@ public class SimEnvironment {
 	//----------------------------------------------------------------
 	// Statistics data 
 	double infRate    = 0;
+	double sickRate   = 0;
 	double immRate    = 0;
 	double receptRate = 0;
 	double deathRate  = 0;
+	double hospRate   = 0;
 	//----------------------------------------------------------------
-    final int HEALTHY =0;
-	final int SICK    =1;
-	final int REMOVED =2;
-	final int SICKNONCONTAGIOUS =4;
+
 	//----------------------------------------------------------------
 	private String strFileName;
 	private String strOutputFileFormat=".pandaOut";
@@ -80,9 +78,16 @@ public class SimEnvironment {
 			initPos[1] = rand.nextInt(fieldSize[1]);
 			
 			this.populationsSize=populationSize;
+			//----------------------------------------
+			// Mobility type setting 
+			int riskMobility = rand.nextInt(100);
+			int mobilityType = 0;
+			if(riskMobility > 65) {
+				mobilityType = (rand.nextInt(2)) + 1;
+			}
 			
 			RandomDude citizen = new RandomDude(initPos, fieldSize, citizenStepSize, healthstatus, 
-				                                pandemicSetting);
+												mobilityType,pandemicSetting);
 			populationField.add(citizen);
 		}
 	}
@@ -90,7 +95,7 @@ public class SimEnvironment {
 	public void populationMove() {
 		for(int i=0; i<populationField.size();i++) {
 			RandomDude citizen = (RandomDude) populationField.get(i);
-			citizen.move(citizen.getPosition(), populationField);
+			citizen.move(populationField);
 		}		
 	}
 	
@@ -177,12 +182,7 @@ public class SimEnvironment {
 			if(boHealthOut) 		{outHealthStats();}
 			if(boCreateOutFile) {addOutputTimestepData(steps, tstep ,timestep, populationField);}
 			//-------------------------
-			try {
-				TimeUnit.MILLISECONDS.sleep(timestep);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+				//TimeUnit.MILLISECONDS.sleep(timestep);
 			tstep++;
 		}	
 		if(boCreateOutFile) {createWriteOut(steps);}
@@ -201,33 +201,47 @@ public class SimEnvironment {
 	
 	public void outHealthStats() {
 		int nrInfected=0;
+		int nrSick=0;
 		int nrFine=0;
 		int nrRemoved=0;
 		int nrDead=0;
+		int nrHospital=0;
 		DecimalFormat numberFormat =  new DecimalFormat("##.##");
 		for(int i=0;i<populationField.size();i++) {
 			RandomDude citizen = (RandomDude) populationField.get(i);
 			if(citizen.getHealthStatus()==0) {
 				nrFine++;
-			} else if (citizen.getHealthStatus()==1) {
+			} else if (citizen.getHealthStatus()==4) {
 				nrInfected++;
 			} else if (citizen.getHealthStatus()==2) {
 				nrRemoved++;
 			} else if (citizen.getHealthStatus()==3) {
 				nrDead++;
+			} else if (citizen.getHealthStatus()==1) {
+				nrSick++;
+			}
+			
+			if (citizen.getContainmentStatus()==1) {
+				nrHospital++;
 			}
 		}
 		 infRate    = (double) (nrInfected) / populationField.size()  * 100;
 		 immRate    = (double) (nrRemoved)  / populationField.size()  * 100;
 		 receptRate = (double) (nrFine)     / populationField.size()  * 100;
 		 deathRate  = (double) (nrDead)     / populationField.size()  * 100;
-		System.out.println("Infection Rate: "+numberFormat.format(infRate) );
+		 sickRate   = (double) (nrSick)     / populationField.size()  * 100;
+		 hospRate   = (double) (nrHospital) / populationField.size()  * 100;
+		 
+		System.out.println("Sick Rate: "+numberFormat.format(infRate) );
 		// System.out.println("Immunity Rate: "+immRate);
 
-		dataOut[0] = infRate;
+		dataOut[0] = sickRate;
 		dataOut[1] = receptRate;
 		dataOut[2] = immRate;
 		dataOut[3] = deathRate;
+		dataOut[4] = infRate;
+		dataOut[5] = hospRate;
+		
 		realTimePlotElement.updateChart(dataOut);
 	}
 	

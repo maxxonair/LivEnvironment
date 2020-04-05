@@ -34,6 +34,7 @@ public class ControlPane {
 		startButton.setLocation(5, 30);
 		startButton.addActionListener(new ActionListener() {
 
+			@SuppressWarnings("deprecation")
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				if (simState == 0) {
