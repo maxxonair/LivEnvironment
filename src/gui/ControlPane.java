@@ -31,9 +31,10 @@ public class ControlPane {
 		
 		JButton startButton = new JButton("Start/Stop");
 		startButton.setSize(150,50);
-		startButton.setLocation(30, 30);
+		startButton.setLocation(5, 30);
 		startButton.addActionListener(new ActionListener() {
 
+			@SuppressWarnings("deprecation")
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				if (simState == 0) {

@@ -37,7 +37,7 @@ public class RealTimePlotElement {
    
    private ChartPanel chartPanel;
    
-   private Color[] seriesColor = new Color[4];
+   private Color[] seriesColor ;
   // seriesColor[0] = Color.RED;
    
    private int ID;
@@ -58,25 +58,31 @@ public class RealTimePlotElement {
 			   InputFileSet val_01 = new InputFileSet(nPlot, plotFrequency);
 			   val_01.setLegend(true);
 			   if(j==0) {
-				   val_01.setInputDataFileName("Infection Rate");
+				   val_01.setInputDataFileName("Sick Rate Rate");
 			   } else if (j==1) {
 				   val_01.setInputDataFileName("Receptives Rate");   
 			   } else if (j==2) {
 				   val_01.setInputDataFileName("Removed Rate");   
+			   } else if (j==3) {
+				   val_01.setInputDataFileName("Infected Rate"); 
+			   } else if (j==4) {
+				   val_01.setInputDataFileName("Hospital Rate"); 
 			   } else {
 				   val_01.setInputDataFileName("");  
 			   }
 			   resultFile.add(val_01);
 	   	}
-	   	
-	   
-	     labelColor = new Color(220,220,220);   
-	   	 backgroundColor = new Color(41,41,41);
+	   		   
+	    labelColor = new Color(220,220,220);   
+	   	backgroundColor = new Color(41,41,41);
 	   	 
+	   	seriesColor = new Color[dataOut.length]; 
 	   	seriesColor[0] = Color.RED;
 	   	seriesColor[1] = Color.BLUE;
 	   	seriesColor[2] = Color.WHITE;
-	   	seriesColor[3] = Color.GREEN;
+	   	seriesColor[3] = Color.BLACK;
+	   	seriesColor[4] = Color.ORANGE;
+	   	seriesColor[5] = Color.MAGENTA;
 	   	
 	   	createPlotElement();
 
@@ -125,8 +131,8 @@ public class RealTimePlotElement {
 				plot.setBackgroundPaint(backgroundColor);
 				plot.setDomainGridlinePaint(labelColor);
 				plot.setRangeGridlinePaint(labelColor); 
-				plot.getRangeAxis().setLabel("[-]");
-				plot.getDomainAxis().setLabel("time [-]");
+				plot.getRangeAxis().setLabel("[percentage]");
+				plot.getDomainAxis().setLabel("time [days]");
 			    renderer.setSeriesPaint( i , seriesColor[i]);
 				renderer.setSeriesShape(i, dot);
 		    }

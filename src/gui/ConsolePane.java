@@ -7,7 +7,6 @@ import java.awt.Font;
 import java.io.PrintStream;
 
 import javax.swing.BorderFactory;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
