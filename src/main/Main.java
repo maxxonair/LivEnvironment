@@ -32,25 +32,25 @@ public class Main {
 	    // GUI Playground settings 
 	    int citizenSize = 4;			 	  // Citizen box length/width [pixel] (Does not influence to infection radius)
 	    // Population Settings 
-	    int populationSize = 300;		  // Total population size per environment
-	    int citizenStepSize = 10; 		  // Maximum citizen mobility step per time step [pixel/unit]
+	    int populationSize = 400;		  // Total population size per environment
+	    int citizenStepSize = 20; 		  // Maximum citizen mobility step per time step [pixel/unit]
 	    
 	    PandemicSettings pandemicSetting = new PandemicSettings();
 	    
 	    // Pandemic Settings 
-	    pandemicSetting.setInfectionRadius(35);	    	   // Infection box half length [pixel/unit]
-	    pandemicSetting.setRiskOfInfection(20);		   // Risk of infection during single encounter [%]
-	    pandemicSetting.setSickLeave(14*2); 	     	   // Time period of sickness (from infection to removed) [pixel/unit]
+	    pandemicSetting.setInfectionRadius(45);	    	   // Infection box half length [pixel/unit]
+	    pandemicSetting.setRiskOfInfection(40);		   // Risk of infection during single encounter [%]
+	    pandemicSetting.setSickLeave(4*2); 	     	   // Time period of sickness (from infection to removed) [pixel/unit]
 	    pandemicSetting.setMortalityRate(0.07);        // Mortality rate after incubation period
 	    
 	    pandemicSetting.setSymptomRate(0.8);	   			// Percentage of sick individuals entering quarantine [%]
-	    pandemicSetting.setTimeToSymptoms(4*2);	        // Time from infection to showing symptoms
+	    pandemicSetting.setTimeToSymptoms(0.5*2);	        // Time from infection to showing symptoms
 	    pandemicSetting.setBoEnterQuarantine(true);  	// Include Quarantine
 	    pandemicSetting.setRiskOfMisdiagnose(0.2);	   	// Risk of misdiagnosis, missing tests, no symptoms 
 										   				// -> sick infectious citizens are not quarantined
 	    
 	    // Init health setting 
-	    pandemicSetting.setInitInfectionRate(0.09);
+	    pandemicSetting.setInitInfectionRate(0.07);
 	    
 	    // Console settings
 	    boolean consPos=false;				// Select to show citizen position as console output

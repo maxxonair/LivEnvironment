@@ -51,7 +51,8 @@ public class SimEnvironment {
 	double deathRate  = 0;
 	double hospRate   = 0;
 	//----------------------------------------------------------------
-
+	// Population data 
+	private double[][] distanceMatrix; 
 	//----------------------------------------------------------------
 	private String strFileName;
 	private String strOutputFileFormat=".pandaOut";
@@ -67,6 +68,8 @@ public class SimEnvironment {
 	}
 	
 	public void createPopulation(int populationSize) {
+		this.populationsSize=populationSize;
+		
 		int nrOfSick = (int) (pandemicSetting.getInitInfectionRate()*populationSize);
 		for(int i=0;i<populationSize;i++) {
 			int healthstatus = 0;
@@ -76,8 +79,6 @@ public class SimEnvironment {
 			int[] initPos = new int[2];
 			initPos[0] = rand.nextInt(fieldSize[0]);
 			initPos[1] = rand.nextInt(fieldSize[1]);
-			
-			this.populationsSize=populationSize;
 			//----------------------------------------
 			// Mobility type setting 
 			int riskMobility = rand.nextInt(100);
@@ -90,6 +91,31 @@ public class SimEnvironment {
 												mobilityType,pandemicSetting);
 			populationField.add(citizen);
 		}
+		
+		distanceMatrix = createDistanceMatrix();
+	}
+	
+	private double[][] createDistanceMatrix(){
+		double[][] distanceMatrix = new double[populationsSize][populationsSize];
+		for(int i=0;i< populationsSize;i++) {
+			for(int j=(populationsSize-i);j< populationsSize;j++) {
+				double vecNorm=0;
+				for(int k=0;k<2;k++) {
+					double localDiff = (double) (populationField.get(i).getPosition()[k] - populationField.get(j).getPosition()[k] );
+				vecNorm += localDiff * localDiff;
+				} 
+				vecNorm = Math.sqrt(vecNorm);
+				distanceMatrix[i][j]  =  vecNorm;
+			}
+		}
+		
+		for(int i=0;i< populationsSize;i++) {
+			for(int j=0;j< populationsSize-i;j++) {
+				distanceMatrix[i][j] = distanceMatrix[j][i];
+			}
+		}
+		
+		return distanceMatrix;
 	}
 	
 	public void populationMove() {
@@ -147,6 +173,7 @@ public class SimEnvironment {
 						int quarantRate = (int) (citizen.getPandemicSetting().getSymptomRate() * 1000);
 						int quarantineCall = rand.nextInt(1001);
 						if(quarantineCall > quarantRate) {
+							
 							citizen.setContainmentStatus(1);  // Citizen is entering quarantine and is removed from the field
 						}
 					}
@@ -155,6 +182,58 @@ public class SimEnvironment {
 				
 			}
 			
+		}
+	}
+	
+	public void updateContamination(boolean useAdvancedMethod) {
+		
+		distanceMatrix = createDistanceMatrix();
+		
+		for(int k=0; k<populationField.size();k++) {
+			RandomDude citizen = (RandomDude) populationField.get(k);
+			double r = (double) (citizen.getPandemicSetting().getInfectionRadius());
+			if(citizen.getHealthStatus() == 0) {
+				for(int j=0; j<populationField.size();j++) {
+					if ( distanceMatrix[k][j] < r && k != j ) {
+						citizen.setHealthStatus( contaminationCaseAssessment(citizen.getPandemicSetting().getRiskOfInfection()) ); 
+						
+						break;
+					}
+				}					
+				
+			} else if (citizen.getHealthStatus() == 1) {
+				citizen.updateSickLeave(timeIncrement);  
+				if(citizen.getInfectionTime()>citizen.getPandemicSetting().getSickLeave()) {
+
+					int inMortRate = (int) (citizen.getPandemicSetting().getMortalityRate() * 1000);
+					int nerosCall = rand.nextInt(1001);
+					if(nerosCall > inMortRate) {
+						citizen.setHealthStatus(2);  // set to removed and alive and immune
+						citizen.setContainmentStatus(0);
+					} else {
+						citizen.setHealthStatus(3);  // set to removed and dead
+						citizen.setContainmentStatus(0);  
+					}
+				}
+				
+			//-------------------------------------------------------------------------------------------
+			} else if (citizen.getHealthStatus() == 4) {
+				citizen.updateSickLeave(timeIncrement); 
+				if(citizen.getInfectionTime()>citizen.getPandemicSetting().getTimeToSymptoms() ) {
+					citizen.setHealthStatus(1);  // set to sick and contagious
+					
+					if(citizen.getPandemicSetting().isBoEnterQuarantine()) {
+						int quarantRate = (int) (citizen.getPandemicSetting().getSymptomRate() * 1000);
+						int quarantineCall = rand.nextInt(1001);
+						if(quarantineCall > quarantRate) {
+							
+							citizen.setContainmentStatus(1);  // Citizen is entering quarantine and is removed from the field
+						}
+					}
+					
+				}
+				
+			}
 		}
 	}
 	
@@ -174,7 +253,7 @@ public class SimEnvironment {
 			//-------------------------
 			// Add Simulation Actions here 
 			populationMove();
-			updateContamination();
+			updateContamination(true);
 			// Update GUI
 			updateGUI();
 			// Output
