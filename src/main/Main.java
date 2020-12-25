@@ -38,8 +38,8 @@ public class Main {
 	    PandemicSettings pandemicSetting = new PandemicSettings();
 	    
 	    // Pandemic Settings 
-	    pandemicSetting.setInfectionRadius(45);	    	   // Infection box half length [pixel/unit]
-	    pandemicSetting.setRiskOfInfection(40);		   // Risk of infection during single encounter [%]
+	    pandemicSetting.setInfectionRadius(20);	    	   // Infection box half length [pixel/unit]
+	    pandemicSetting.setRiskOfInfection(30);		   // Risk of infection during single encounter [%]
 	    pandemicSetting.setSickLeave(4*2); 	     	   // Time period of sickness (from infection to removed) [pixel/unit]
 	    pandemicSetting.setMortalityRate(0.07);        // Mortality rate after incubation period
 	    

@@ -1,7 +1,9 @@
 package simPlatform;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -97,21 +99,22 @@ public class SimEnvironment {
 	
 	private double[][] createDistanceMatrix(){
 		double[][] distanceMatrix = new double[populationsSize][populationsSize];
-		for(int i=0;i< populationsSize;i++) {
-			for(int j=(populationsSize-i);j< populationsSize;j++) {
+		for(int i=0; i< populationsSize ;i++) {
+			for(int j = i;j< populationsSize ;j++) {
 				double vecNorm=0;
 				for(int k=0;k<2;k++) {
-					double localDiff = (double) (populationField.get(i).getPosition()[k] - populationField.get(j).getPosition()[k] );
-				vecNorm += localDiff * localDiff;
+					double localDiff = (double) ( (double) populationField.get(i).getPosition()[k] - 
+												  (double) populationField.get(j).getPosition()[k] );
+					vecNorm += localDiff * localDiff;
 				} 
 				vecNorm = Math.sqrt(vecNorm);
-				distanceMatrix[i][j]  =  vecNorm;
+				distanceMatrix[j][i]  =  vecNorm;
 			}
 		}
 		
-		for(int i=0;i< populationsSize;i++) {
-			for(int j=0;j< populationsSize-i;j++) {
-				distanceMatrix[i][j] = distanceMatrix[j][i];
+		for(int i = 0 ; i < populationsSize ; i++) {
+			for(int j=0 ; j < i ; j++) {
+				distanceMatrix[j][i] = distanceMatrix[i][j];
 			}
 		}
 		
@@ -195,8 +198,10 @@ public class SimEnvironment {
 			if(citizen.getHealthStatus() == 0) {
 				for(int j=0; j<populationField.size();j++) {
 					if ( distanceMatrix[k][j] < r && k != j ) {
-						citizen.setHealthStatus( contaminationCaseAssessment(citizen.getPandemicSetting().getRiskOfInfection()) ); 
-						
+						RandomDude intCit = (RandomDude) populationField.get(j);
+						if (intCit.getHealthStatus() == 1 || intCit.getHealthStatus() == 4 ) {
+							citizen.setHealthStatus( contaminationCaseAssessment(citizen.getPandemicSetting().getRiskOfInfection()) ); 
+						}
 						break;
 					}
 				}					
@@ -254,6 +259,16 @@ public class SimEnvironment {
 			// Add Simulation Actions here 
 			populationMove();
 			updateContamination(true);
+			/* Create write out from distance matrix:
+			if (tstep == 0) {
+				try {
+					writeDistanceMatrixToFile( "distanceMatrix.csv" , " ");
+				} catch (FileNotFoundException | UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			*/
 			// Update GUI
 			updateGUI();
 			// Output
@@ -356,6 +371,21 @@ public class SimEnvironment {
 		if(guiEnvironment!=null) {
 			guiEnvironment.updatePopulation();
 		}
+	}
+	
+	public void writeDistanceMatrixToFile(String fileName, String delimiter) throws FileNotFoundException, UnsupportedEncodingException {
+        String resultpath="";
+    	String dir = System.getProperty("user.dir");
+    	resultpath = dir + "/"+fileName;
+    	PrintWriter writer = new PrintWriter(new File(resultpath), "UTF-8");
+		for(int k=0; k<populationField.size();k++) {
+			String line = "";
+			for(int l=0; l<populationField.size();l++) {
+				line += distanceMatrix[k][l]+delimiter;
+			}
+			writer.println(line);
+		}
+		writer.close();
 	}
 
 	public List<Citizen> getPopulationField() {
